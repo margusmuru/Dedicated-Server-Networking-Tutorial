@@ -6,7 +6,12 @@ namespace Dedicated_Server_Networking_Tutorial
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            Console.Title = "Game Server";
+            Console.WriteLine("Initializing server...");
+            
+            Server.Start(4, 26950);
+            
+            Console.ReadKey();
         }
     }
 }
