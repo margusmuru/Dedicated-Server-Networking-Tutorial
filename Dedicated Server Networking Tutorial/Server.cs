@@ -10,6 +10,11 @@ namespace Dedicated_Server_Networking_Tutorial
         public static int MaxPlayers { get; private set; }
         public static int Port { get; private set; }
         public static Dictionary<int, Client> Clients = new Dictionary<int, Client>();
+
+        public delegate void PacketHandler(int fromClient, Packet packet);
+
+        public static Dictionary<int, PacketHandler> PacketHandlers;
+
         private static TcpListener _tcpListener;
 
         public static void Start(int maxPlayers, int port)
@@ -30,7 +35,7 @@ namespace Dedicated_Server_Networking_Tutorial
         {
             TcpClient client = _tcpListener.EndAcceptTcpClient(result);
             _tcpListener.BeginAcceptTcpClient(TcpConnectCallback, null);
-            
+
             Console.WriteLine($"Incoming connection from {client.Client.RemoteEndPoint}...");
             for (int i = 1; i <= MaxPlayers; i++)
             {
@@ -40,6 +45,7 @@ namespace Dedicated_Server_Networking_Tutorial
                     return;
                 }
             }
+
             Console.WriteLine($"{client.Client.RemoteEndPoint} failed to connect: Server is full");
         }
 
@@ -49,6 +55,12 @@ namespace Dedicated_Server_Networking_Tutorial
             {
                 Clients.Add(i, new Client(i));
             }
+
+            PacketHandlers = new Dictionary<int, PacketHandler>()
+            {
+                {(int) ClientPackets.welcomeReceived, ServerHandle.WelcomeReceived}
+            };
+            Console.WriteLine("Initialized packets.");
         }
     }
 }
