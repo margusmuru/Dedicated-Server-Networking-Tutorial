@@ -1,4 +1,5 @@
 using System;
+using System.Net;
 using System.Net.Sockets;
 
 namespace Dedicated_Server_Networking_Tutorial
@@ -9,11 +10,13 @@ namespace Dedicated_Server_Networking_Tutorial
 
         public int Id;
         public TCP Tcp;
+        public UDP Udp;
 
         public Client(int clientId)
         {
             Id = clientId;
             Tcp = new TCP(Id);
+            Udp = new UDP(Id);
         }
 
         public class TCP
@@ -122,6 +125,43 @@ namespace Dedicated_Server_Networking_Tutorial
                 {
                     Console.WriteLine($"Error sending data to player {_id} via TCP: {e}");
                 }
+            }
+        }
+
+        public class UDP
+        {
+            public IPEndPoint EndPoint;
+            private int _id;
+
+            public UDP(int id)
+            {
+                _id = id;
+            }
+
+            public void Connect(IPEndPoint endPoint)
+            {
+                EndPoint = endPoint;
+                ServerSend.UdpTest(_id);
+            }
+
+            public void SendData(Packet packet)
+            {
+                Server.SendUdpData(EndPoint, packet);
+            }
+
+            public void HandleData(Packet packetData)
+            {
+                int packetLength = packetData.ReadInt();
+                byte[] packetBytes = packetData.ReadBytes(packetLength);
+                
+                ThreadManager.ExecuteOnMainThread(() =>
+                {
+                    using (Packet packet = new Packet(packetBytes))
+                    {
+                        int packetId = packet.ReadInt();
+                        Server.PacketHandlers[packetId](_id, packet);
+                    }
+                });
             }
         }
     }

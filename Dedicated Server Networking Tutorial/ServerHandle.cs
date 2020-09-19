@@ -14,5 +14,11 @@ namespace Dedicated_Server_Networking_Tutorial
                 Console.WriteLine($"Player \"{userName}\" (ID: {fromClient}) has assumed the wrong client ID ({clientIdCheck})!");
             }
         }
+
+        public static void UdpTestReceieved(int toClient, Packet packet)
+        {
+            string msg = packet.ReadString();
+            Console.WriteLine($"Recieved packed via UDP. Contains message: {msg}");
+        }
     }
 }
