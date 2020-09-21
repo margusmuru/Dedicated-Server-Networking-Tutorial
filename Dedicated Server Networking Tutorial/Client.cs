@@ -1,6 +1,7 @@
 using System;
 using System.Net;
 using System.Net.Sockets;
+using System.Numerics;
 
 namespace Dedicated_Server_Networking_Tutorial
 {
@@ -9,6 +10,7 @@ namespace Dedicated_Server_Networking_Tutorial
         public static int DataBufferSize = 4096;
 
         public int Id;
+        public Player Player;
         public TCP Tcp;
         public UDP Udp;
 
@@ -141,7 +143,6 @@ namespace Dedicated_Server_Networking_Tutorial
             public void Connect(IPEndPoint endPoint)
             {
                 EndPoint = endPoint;
-                ServerSend.UdpTest(_id);
             }
 
             public void SendData(Packet packet)
@@ -162,6 +163,29 @@ namespace Dedicated_Server_Networking_Tutorial
                         Server.PacketHandlers[packetId](_id, packet);
                     }
                 });
+            }
+        }
+
+        public void SendIntoGame(string playerName)
+        {
+            Player = new Player(Id, playerName, new Vector3(0, 0, 0));
+            foreach (Client client in Server.Clients.Values)
+            {
+                if (client.Player != null)
+                {
+                    if (client.Id != Id)
+                    {
+                        ServerSend.SpawnPlayer(Id, client.Player);
+                    }
+                }
+            }
+
+            foreach (Client client in Server.Clients.Values)
+            {
+                if (client.Player != null)
+                {
+                    ServerSend.SpawnPlayer(client.Id, Player);
+                }
             }
         }
     }

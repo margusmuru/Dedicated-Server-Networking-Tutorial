@@ -118,8 +118,8 @@ namespace Dedicated_Server_Networking_Tutorial
 
             PacketHandlers = new Dictionary<int, PacketHandler>()
             {
-                {(int) ClientPackets.welcomeReceived, ServerHandle.WelcomeReceived},
-                {(int) ClientPackets.udpTestReceived, ServerHandle.UdpTestReceieved}
+                {(int) ClientPackets.WelcomeReceived, ServerHandle.WelcomeReceived},
+                {(int) ClientPackets.PlayerMovement, ServerHandle.PlayerMovement},
             };
             Console.WriteLine("Initialized packets.");
         }

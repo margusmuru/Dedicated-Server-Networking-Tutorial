@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Text;
 
 namespace Dedicated_Server_Networking_Tutorial
@@ -7,15 +8,17 @@ namespace Dedicated_Server_Networking_Tutorial
     /// <summary>Sent from server to client.</summary>
     public enum ServerPackets
     {
-        welcome = 1,
-        udpTest
+        Welcome = 1,
+        SpawnPlayer,
+        PlayerPosition,
+        PlayerRotation
     }
 
     /// <summary>Sent from client to server.</summary>
     public enum ClientPackets
     {
-        welcomeReceived = 1,
-        udpTestReceived
+        WelcomeReceived = 1,
+        PlayerMovement
     }
 
     public class Packet : IDisposable
@@ -159,6 +162,23 @@ namespace Dedicated_Server_Networking_Tutorial
             Write(_value.Length); // Add the length of the string to the packet
             buffer.AddRange(Encoding.ASCII.GetBytes(_value)); // Add the string itself
         }
+
+        public void Write(Vector3 value)
+        {
+            Write(value.X);
+            Write(value.Y);
+            Write(value.Z);
+            
+        }
+
+        public void Write(Quaternion value)
+        {
+            Write(value.X);
+            Write(value.Y);
+            Write(value.Z);
+            Write(value.W);
+        }
+        
         #endregion
 
         #region Read Data
@@ -330,6 +350,17 @@ namespace Dedicated_Server_Networking_Tutorial
                 throw new Exception("Could not read value of type 'string'!");
             }
         }
+
+        public Vector3 ReadVector3(bool _moveReadPos = true)
+        {
+            return new Vector3(ReadFloat(_moveReadPos), ReadFloat(_moveReadPos), ReadFloat(_moveReadPos));
+        }
+        
+        public Quaternion ReadQuaternion(bool _moveReadPos = true)
+        {
+            return new Quaternion(ReadFloat(_moveReadPos), ReadFloat(_moveReadPos), ReadFloat(_moveReadPos), ReadFloat(_moveReadPos));
+        }
+        
         #endregion
 
         private bool disposed = false;

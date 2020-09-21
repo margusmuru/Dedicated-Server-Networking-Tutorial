@@ -4,7 +4,7 @@ namespace Dedicated_Server_Networking_Tutorial
     {
         public static void Welcome(int toClient, string message)
         {
-            using (Packet packet = new Packet((int) ServerPackets.welcome))
+            using (Packet packet = new Packet((int) ServerPackets.Welcome))
             {
                 packet.Write(message);
                 packet.Write(toClient);
@@ -13,12 +13,36 @@ namespace Dedicated_Server_Networking_Tutorial
             }
         }
 
-        public static void UdpTest(int toClient)
+        public static void SpawnPlayer(int toClient, Player player)
         {
-            using (Packet packet = new Packet((int) ServerPackets.udpTest))
+            using (Packet packet = new Packet((int) ServerPackets.SpawnPlayer))
             {
-                packet.Write("A test packet for UDP.");
-                SendUdpData(toClient, packet);
+                packet.Write(player.Id);
+                packet.Write(player.UserName);
+                packet.Write(player.Position);
+                packet.Write(player.Rotation);
+
+                SendTcpData(toClient, packet);
+            }
+        }
+
+        public static void PlayerPosition(Player player)
+        {
+            using (Packet packet = new Packet((int) ServerPackets.PlayerPosition))
+            {
+                packet.Write(player.Id);
+                packet.Write(player.Position);
+                SendUdpDataToAll(packet);
+            }
+        }
+
+        public static void PlayerRotation(Player player)
+        {
+            using (Packet packet = new Packet((int) ServerPackets.PlayerRotation))
+            {
+                packet.Write(player.Id);
+                packet.Write(player.Rotation);
+                SendUdpDataToAll(player.Id, packet);
             }
         }
 
@@ -42,8 +66,8 @@ namespace Dedicated_Server_Networking_Tutorial
                 Server.Clients[i].Tcp.SendData(packet);
             }
         }
-        
-        private static void SendTUdpDataToAll(Packet packet)
+
+        private static void SendUdpDataToAll(Packet packet)
         {
             packet.WriteLength();
             for (int i = 1; i <= Server.MaxPlayers; i++)
