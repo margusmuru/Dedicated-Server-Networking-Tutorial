@@ -48,6 +48,15 @@ namespace Dedicated_Server_Networking_Tutorial
                 ServerSend.Welcome(_id, "Welcome to the server!");
             }
 
+            public void Disconnect()
+            {
+                Socket.Close();
+                _stream = null;
+                _receivedData = null;
+                _recieveBuffer = null;
+                Socket = null;
+            }
+
             private void RecieveCallback(IAsyncResult result)
             {
                 try
@@ -55,7 +64,7 @@ namespace Dedicated_Server_Networking_Tutorial
                     int byteLength = _stream.EndRead(result);
                     if (byteLength <= 0)
                     {
-                        // TODO disconnect
+                        Server.Clients[_id].Disconnect();
                         return;
                     }
                     byte[] data = new byte[byteLength];
@@ -66,7 +75,7 @@ namespace Dedicated_Server_Networking_Tutorial
                 catch (Exception ex)
                 {
                     Console.WriteLine($"Error recieving TCP data: {ex}");
-                    // TODO disconnect
+                    Server.Clients[_id].Disconnect();
                 }
             }
             
@@ -145,6 +154,11 @@ namespace Dedicated_Server_Networking_Tutorial
                 EndPoint = endPoint;
             }
 
+            public void Disconnect()
+            {
+                EndPoint = null;
+            }
+
             public void SendData(Packet packet)
             {
                 Server.SendUdpData(EndPoint, packet);
@@ -187,6 +201,14 @@ namespace Dedicated_Server_Networking_Tutorial
                     ServerSend.SpawnPlayer(client.Id, Player);
                 }
             }
+        }
+
+        private void Disconnect()
+        {
+            Console.WriteLine($"{Tcp.Socket.Client.RemoteEndPoint} has disconnected.");
+            Player = null;
+            Tcp.Disconnect();
+            Udp.Disconnect();
         }
     }
 }
